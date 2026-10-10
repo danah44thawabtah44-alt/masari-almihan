@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مساري المهني | اكتشفي مستقبلك</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:18px;font-family:Arial,Tahoma,sans-serif;background:linear-gradient(140deg,#eee7ff,#eaf6ff);color:#30264b;line-height:1.8}
+main{max-width:720px;margin:auto}
+header{text-align:center;padding:20px 5px}
+.logo{font-size:48px}
+h1{color:#7046d5;margin:4px}
+.sub{color:#77718b}
+.card{background:white;border-radius:22px;padding:24px;margin:16px 0;box-shadow:0 8px 28px #35205c12}
+.center{text-align:center}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.stat{flex:1;min-width:90px;background:#f4efff;border-radius:13px;padding:12px;text-align:center}
+button{font-size:16px;font-weight:bold;padding:13px 18px;border:0;border-radius:12px;cursor:pointer}
+.primary{background:#7046d5;color:white}
+.secondary{background:#eee8fc;color:#5338a8}
+button:disabled{opacity:.4;cursor:not-allowed}
+.full{width:100%}
+.progress{height:9px;background:#eee;border-radius:20px;overflow:hidden;margin:14px 0}
+#bar{height:100%;width:0;background:linear-gradient(90deg,#7046d5,#b5a0ff);transition:.2s}
+.answer{display:block;width:100%;text-align:right;background:#faf9ff;border:2px solid #eee8fa;color:#30264b;margin:10px 0}
+.answer.selected{background:#f0eaff;border-color:#7046d5}
+.actions{display:flex;gap:10px;margin-top:22px}
+.actions button{flex:1}
+.hidden{display:none!important}
+.tag{color:#7046d5;font-weight:bold}
+.track{height:9px;background:#eee;border-radius:10px;overflow:hidden}
+.fill{height:100%;background:#805be0;border-radius:10px}
+.score{margin:16px 0}
+.scorehead{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.chip{display:inline-block;padding:7px 12px;border-radius:20px;background:#f0eaff;color:#6042ba;margin:4px;font-size:14px}
+.small{font-size:12px;color:#7e778f}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="logo">🧭</div>
+<h1>مساري المهني</h1>
+<div class="sub">اكتشفي ميولك، وابدئي رحلتك نحو المستقبل</div>
+</header>
+
+<section id="home" class="card center">
+<div style="font-size:38px">✨</div>
+<h2>مستقبلك يبدأ باكتشاف نفسك</h2>
+<p>أجيبي عن 25 سؤالًا عن اهتماماتك وطريقة تفكيرك، واكتشفي المسارات المهنية الأقرب إلى إجاباتك.</p>
+<div class="stats">
+<div class="stat">📝<br><b>25 سؤالًا</b></div>
+<div class="stat">🎯<br><b>5 مسارات</b></div>
+<div class="stat">📊<br><b>نتائج فورية</b></div>
+</div>
+<button class="primary full" onclick="start()">ابدئي اكتشاف مسارك ←</button>
+<p class="small">لا توجد إجابة صحيحة أو خاطئة. اختاري ما يعبر عنك.</p>
+</section>
+
+<section id="quiz" class="card hidden">
+<div style="display:flex;justify-content:space-between">
+<b id="counter"></b><span id="pct"></span>
+</div>
+<div class="progress"><div id="bar"></div></div>
+<div id="category" class="tag"></div>
+<h2 id="question"></h2>
+<div id="answers"></div>
+<div class="actions">
+<button id="back" class="secondary" onclick="prev()">السابق</button>
+<button id="next" class="primary" onclick="next()" disabled>التالي ←</button>
+</div>
+</section>
+
+<section id="result" class="hidden">
+<div class="card center">
+<div style="font-size:44px">🏆</div>
+<p>المسار الأقرب إلى إجاباتك هو</p>
+<h1 id="winner"></h1>
+<h2 id="winnerPct"></h2>
+<p id="desc"></p>
+</div>
+<div class="card">
+<h2>📊 تحليل المسارات</h2>
+<p class="small">النسب تمثل مدى توافق إجاباتك مع كل مسار، وليست ضمانًا للنجاح فيه.</p>
+<div id="scores"></div>
+</div>
+<div class="card">
+<h2>💡 مهارات يمكنك تطويرها</h2>
+<div id="skills"></div>
+<h3>🚀 خطوتك التالية</h3>
+<p id="advice"></p>
+</div>
+<div class="card center">
+<p class="small">هذا اختبار استكشافي مبسط يساعدك على التفكير في خياراتك، وليس تقييمًا نفسيًا أو قرارًا نهائيًا بشأن مستقبلك.</p>
+<button class="primary full" onclick="restart()">🔄 إعادة الاختبار</button>
+</div>
+</section>
+</main>
+
+<script>
+const paths={
+media:{name:"الإعلام والاتصال",icon:"📢",desc:"تميل إجاباتك إلى التواصل وصناعة المحتوى والتعبير عن الأفكار والتأثير في الجمهور.",skills:["التواصل","كتابة المحتوى","التصوير","الإقناع"],advice:"جربي إعداد تقرير قصير أو مقابلة أو حملة توعوية مدرسية."},
+design:{name:"التصميم والإبداع",icon:"🎨",desc:"تميل إجاباتك إلى الإبداع والتفكير البصري وتحويل الأفكار إلى تصاميم مميزة.",skills:["الإبداع","التصميم","الابتكار","الاهتمام بالتفاصيل"],advice:"صممي ملصقًا أو هوية بصرية لمشروع مدرسي باستخدام أداة تصميم."},
+tech:{name:"علوم الحاسب والتقنية",icon:"💻",desc:"تميل إجاباتك إلى التفكير المنطقي وفهم الأنظمة والتقنيات وحل المشكلات.",skills:["التحليل","حل المشكلات","التفكير المنطقي","المهارات التقنية"],advice:"جربي إنشاء صفحة ويب بسيطة أو استكشاف طريقة عمل تطبيق."},
+business:{name:"إدارة الأعمال",icon:"💼",desc:"تميل إجاباتك إلى التخطيط والتنظيم والقيادة واتخاذ القرارات.",skills:["التنظيم","القيادة","التخطيط","إدارة الوقت"],advice:"خططي لمشروع صغير وحددي أهدافه وميزانيته ومهام فريقه."},
+tourism:{name:"السياحة والضيافة",icon:"✈️",desc:"تميل إجاباتك إلى اكتشاف الأماكن وتنظيم التجارب والتعامل مع الزوار.",skills:["التواصل","التنظيم","خدمة الزوار","التخطيط"],advice:"أعدي برنامجًا سياحيًا ليوم واحد في مدينتك مع أهم المعالم."}
+};
+
+const Q=[
+["الاهتمامات","أي نشاط تختارين في وقت فراغك؟",["تصوير قصة أو صناعة محتوى","تصميم شيء جميل","تجربة تطبيق أو أداة تقنية","التخطيط لمشروع","اكتشاف مكان جديد"]],
+["الإبداع","أي مهمة تستمتعين بها أكثر؟",["كتابة فكرة وإيصالها للناس","اختيار الألوان وتنسيق التصاميم","حل لغز منطقي","تنظيم فريق ومهامه","تنظيم رحلة أو فعالية"]],
+["التواصل","أي دور تفضلين داخل مجموعة؟",["التحدث وعرض الأفكار","تجهيز الشكل والتصميم","حل المشكلات التقنية","قيادة الفريق","تنظيم استقبال الضيوف"]],
+["التعلم","أي مهارة تودين تطويرها؟",["الإلقاء والكتابة","التصميم والرسم الرقمي","البرمجة والتقنية","القيادة والإدارة","تنظيم الفعاليات"]],
+["المدرسة","في مشروع مدرسي، ماذا تختارين؟",["كتابة وتقديم العرض","تصميم الشرائح والملصقات","إنشاء نموذج إلكتروني","توزيع المهام","تنسيق الفعالية والضيوف"]],
+["حل المشكلات","كيف تتعاملين مع مشكلة صعبة؟",["أشرحها وأناقشها","أبحث عن حل مبتكر","أحللها خطوة بخطوة","أرتب الخيارات والأولويات","أستشير الناس وأبحث عن حل عملي"]],
+["الإنجاز","أي إنجاز يشعرك بالفخر؟",["حملة تصل إلى جمهور كبير","تصميم يعجب الناس","أداة تقنية تحل مشكلة","مشروع ناجح ومنظم","رحلة يستمتع بها الجميع"]],
+["البيئة","أي مكان عمل يجذبك؟",["شركة إعلامية","استوديو تصميم","شركة تقنية","شركة تجارية","فندق أو شركة سياحية"]],
+["الملاحظة","عندما ترين إعلانًا مميزًا، ماذا تلاحظين؟",["رسالته وطريقة عرضه","ألوانه وتنسيقه","التقنيات المستخدمة","هدفه التجاري","علاقته بالسفر أو التجارب"]],
+["التنظيم","عند بدء مهمة جديدة، ماذا تفعلين؟",["أحدد الرسالة التي أريد إيصالها","أتخيل شكل النتيجة","أقسم المشكلة إلى خطوات","أضع خطة وجدولًا","أخطط لتجربة المشاركين"]],
+["العمل","أي مهمة تبدو ممتعة لك؟",["إجراء مقابلة","ابتكار شعار","اختبار تطبيق","إدارة ميزانية","إعداد برنامج سياحي"]],
+["التعبير","كيف تحبين التعبير عن أفكارك؟",["بالكلام أو الكتابة","بالصور والتصميم","بالحلول التقنية","بالخطط والمشاريع","بتجارب وأنشطة للناس"]],
+["الابتكار","لو امتلكت وقتًا لمشروع، ماذا تختارين؟",["بودكاست أو مجلة","متجر تصاميم رقمية","تطبيق مفيد","مشروع تجاري صغير","مبادرة سياحية"]],
+["القرارات","ما الذي يساعدك على اتخاذ قرار؟",["فهم وجهات النظر","تخيل خيارات جديدة","تحليل المعلومات","مقارنة التكاليف والفوائد","معرفة احتياجات الزوار"]],
+["الفريق","ما الصفة الأهم في فريق ناجح؟",["التواصل الواضح","الأفكار المبتكرة","حل المشكلات","التنظيم والمسؤولية","حسن استقبال الآخرين"]],
+["التقنية","كيف تحبين استخدام التقنية؟",["نشر الرسائل والمحتوى","صناعة تصاميم جذابة","إنشاء أدوات وحلول","إدارة الأعمال بكفاءة","تسهيل الحجوزات والرحلات"]],
+["المشاريع","أي مشروع تختارين المشاركة فيه؟",["حملة إعلامية","مسابقة تصميم","ابتكار تقني","خطة مشروع تجاري","تنظيم معرض سياحي"]],
+["التفاصيل","ما الشيء الذي تنتبهين إليه غالبًا؟",["وضوح الكلام والمعنى","الألوان والتناسق","دقة المعلومات","المواعيد والخطط","راحة الزوار وتنظيم المكان"]],
+["التحديات","أي تحدٍ تفضلين؟",["إيصال فكرة صعبة ببساطة","تحويل فكرة إلى تصميم","حل مشكلة تقنية معقدة","تحقيق هدف ضمن ميزانية","تنظيم تجربة ممتعة للناس"]],
+["المستقبل","أي نتيجة تودين رؤيتها من عملك؟",["أن يسمع الناس رسالة مهمة","أن يروا تصميمًا مميزًا","أن يستخدم الناس حلًا مفيدًا","أن ينجح مشروع وينمو","أن يستمتع الناس بتجربة جديدة"]],
+["التواصل الاجتماعي","أي محتوى تفضلين إعداده؟",["مقابلات وأخبار وقصص","صور وتصاميم","شروحات تقنية","محتوى عن المشاريع والأعمال","أدلة الأماكن والرحلات"]],
+["المهارات","أي مهمة تتعلمينها بحماس؟",["كتابة نص جذاب","تنسيق تصميم احترافي","بناء موقع بسيط","إعداد خطة عمل","تنظيم رحلة جماعية"]],
+["التخطيط","إذا نظمتِ فعالية، ما مسؤوليتك المفضلة؟",["التغطية والتقديم","الديكور والهوية البصرية","نظام التسجيل الإلكتروني","الجدول والميزانية","استقبال الحضور وتوجيههم"]],
+["التفكير","أي سؤال يشد انتباهك؟",["كيف تؤثر الرسائل في الجمهور؟","كيف يجعل التصميم الفكرة أوضح؟","كيف تعمل الأنظمة الرقمية؟","كيف تنجح المشاريع؟","كيف نصنع تجربة سياحية رائعة؟"]],
+["الاختيار","أي وصف أقرب إلى طموحك؟",["أن أشارك الأفكار والقصص","أن أبتكر وأصمم","أن أطور حلولًا تقنية","أن أقود المشاريع","أن أنظم تجارب وأتعرف على أماكن جديدة"]]
+];
+
+const keys=["media","design","tech","business","tourism"];
+let index=0, answers=Array(Q.length).fill(null);
+
+function start(){
+ document.getElementById("home").classList.add("hidden");
+ document.getElementById("result").classList.add("hidden");
+ document.getElementById("quiz").classList.remove("hidden");
+ index=0;answers=Array(Q.length).fill(null);render();
+}
+function render(){
+ const q=Q[index];
+ document.getElementById("counter").textContent="السؤال "+(index+1)+" من "+Q.length;
+ document.getElementById("pct").textContent=Math.round(index/Q.length*100)+"%";
+ document.getElementById("bar").style.width=(index/Q.length*100)+"%";
+ document.getElementById("category").textContent=q[0];
+ document.getElementById("question").textContent=q[1];
+ const box=document.getElementById("answers");box.innerHTML="";
+ q[2].forEach((answer,i)=>{
+  const b=document.createElement("button");
+  b.className="answer"+(answers[index]===i?" selected":"");
+  b.textContent=(i+1)+". "+answer;
+  b.onclick=()=>{answers[index]=i;renderAnswers();};
+  box.appendChild(b);
+ });
+ document.getElementById("back").disabled=index===0;
+ document.getElementById("next").disabled=answers[index]===null;
+ document.getElementById("next").textContent=index===Q.length-1?"عرض النتيجة 🏆":"التالي ←";
+}
+function renderAnswers(){
+ const buttons=document.querySelectorAll(".answer");
+ buttons.forEach((b,i)=>b.classList.toggle("selected",i===answers[index]));
+ document.getElementById("next").disabled=answers[index]===null;
+}
+function next(){
+ if(answers[index]===null)return;
+ if(index<Q.length-1){index++;render();}
+ else showResult();
+}
+function prev(){if(index>0){index--;render();}}
+function showResult(){
+ const totals={media:0,design:0,tech:0,business:0,tourism:0};
+ answers.forEach((a,i)=>{if(a!==null)totals[keys[a]]+=1;});
+ const max=Math.max(...Object.values(totals));
+ const ranked=keys.map(k=>({key:k,value:totals[k]})).sort((a,b)=>b.value-a.value);
+ const winner=ranked[0].key;
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("winner").textContent=paths[winner].icon+" "+paths[winner].name;
+ document.getElementById("winnerPct").textContent=Math.round(max/Q.length*100)+"% من اختياراتك";
+ document.getElementById("desc").textContent=paths[winner].desc;
+ document.getElementById("skills").innerHTML=paths[winner].skills.map(s=>'<span class="chip">'+s+'</span>').join("");
+ document.getElementById("advice").textContent=paths[winner].advice;
+ document.getElementById("scores").innerHTML=ranked.map(item=>{
+  const p=paths[item.key],pct=Math.round(item.value/Q.length*100);
+  return '<div class="score"><div class="scorehead"><span>'+p.icon+' '+p.name+'</span><b>'+pct+'%</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>';
+ }).join("");
+ document.getElementById("bar").style.width="100%";
+}
+function restart(){
+ document.getElementById("result").classList.add("hidden"); و
+ document.getElementById("home").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
